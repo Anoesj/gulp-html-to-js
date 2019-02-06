@@ -79,11 +79,11 @@ module.exports['templates/html/second.html'] = '<p>\\n  "second"\\n</p>'`)
 }
 
 /**
- * With global
+ * With varName
  */
 
 {
-  const stream = gulpHtmlToJs({concat: 'html.js', global: 'window.templates'})
+  const stream = gulpHtmlToJs({concat: 'html.js', varName: 'window.templates'})
 
   for (const file of mockFiles()) {
     stream._transform(file, null, throwAny)

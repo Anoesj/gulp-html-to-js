@@ -41,14 +41,15 @@ Without the `concat` option, each module exports a single string:
 Becomes:
 
 ```js
-module.exports = '<p>Hello world!</p>'
+module.exports = '<p>Hello world!</p>';
 ```
 
 With `concat`, files are grouped into one module, where strings are keyed by file paths:
 
 ```js
-module.exports = Object.create(null)
-module.exports['index.html'] = '<p>Hello world!</p>'
+module.exports = {
+  'index.html': '<p>Hello world!</p>',
+};
 ```
 
 In your app, import the result like so (directory nesting depends on your build configuration):
@@ -68,15 +69,17 @@ See the `concat` option above. You can also modify it with:
 For `{prefix: 'templates'}` the resulting file from the above example is:
 
 ```js
-module.exports = Object.create(null)
-module.exports['templates/index.html'] = '<p>Hello world!</p>'
+module.exports = {
+  'templates/index.html': '<p>Hello world!</p>',
+};
 ```
 
-* `global`: Requires `concat`. Assigns the resulting object to some global identifier other than `module.exports` (default).
+* `varName`: Requires `concat`. Assigns the resulting object to some identifier other than `module.exports` (default).
 
-For `{global: 'window.templates', concat: 'templates.js'}` the example above would produce this:
+For `{varName: 'window.templates', concat: 'templates.js'}` the example above would produce this:
 
 ```js
-window.templates = Object.create(null)
-window.templates['index.html'] = '<p>Hello world!</p>'
+window.templates = {
+  'index.html': '<p>Hello world!</p>',
+};
 ```

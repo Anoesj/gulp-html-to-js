@@ -17,7 +17,7 @@ options.prefix
 
   Optional prefix for each file path. Relevant only for the "concat" option.
 
-options.global
+options.varName
 
   Identifier for the "export" object; default `module.exports` for compatibility
   with CommonJS. You can set it to something like `window.templates` if you're
@@ -25,31 +25,34 @@ options.global
 */
 module.exports = function gulpHtmlToJs(options) {
   options = Object.assign({}, options)
-  if (!options.global) options.global = 'module.exports'
+  if (!options.varName) options.varName = 'module.exports'
   if (options.concat) return concatTransform(options)
   return separateTransform(options)
 }
 
-function concatTransform({concat, prefix, global}) {
+function concatTransform({concat, prefix, varName, esModule = false, stripExtension = false}) {
   if (!concat || typeof concat !== 'string') {
     throw Error(`Option 'concat' must be a non-empty string, got: ${concat}`)
   }
 
-  const lines = [`${global} = Object.create(null)`]
+  const lines = [`${esModule === true ? 'export const ' : ''}${varName} = {`]
 
   return new Transform({
     objectMode: true,
 
     transform(file, __, done) {
       if (file.isBuffer()) {
-        const path = toUnixPath(pt.join(prefix || '', file.relative))
+        let path = toUnixPath(pt.join(prefix || '', file.relative))
+        if (stripExtension === true) path = pt.parse(path).name;
         const text = file.contents.toString()
-        lines.push(`${global}['${escape(path)}'] = '${escape(text)}'`)
+        lines.push(`'${escape(path)}': '${escape(text)}',`)
       }
       done()
     },
 
     flush(done) {
+      lines.push('};')
+
       this.push(new File({
         path: concat,
         contents: Buffer.from(lines.join('\n')),
@@ -59,14 +62,14 @@ function concatTransform({concat, prefix, global}) {
   })
 }
 
-function separateTransform({global}) {
+function separateTransform({varName, esModule = false}) {
   return new Transform({
     objectMode: true,
     transform(file, __, done) {
       if (file.isBuffer()) {
         this.push(new File({
           path: file.relative + '.js',
-          contents: Buffer.from(`${global} = '${escape(file.contents.toString())}'`),
+          contents: Buffer.from(`${esModule ? 'export const ' : ''}${varName} = '${escape(file.contents.toString())}';`),
         }))
       }
       done()
