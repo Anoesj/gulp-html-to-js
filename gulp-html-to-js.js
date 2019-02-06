@@ -45,7 +45,7 @@ function concatTransform({concat, prefix, varName, esModule = false, stripExtens
         let path = toUnixPath(pt.join(prefix || '', file.relative))
         if (stripExtension === true) path = pt.parse(path).name;
         const text = file.contents.toString()
-        lines.push(`'${escape(path)}': '${escape(text)}',`)
+        lines.push(`  '${escape(path)}': '${escape(text)}',`)
       }
       done()
     },
